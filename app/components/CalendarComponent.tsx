@@ -30,5 +30,3 @@ export function CalendarComponent() {
     </div>
   );
 }
-
-export default CalendarComponent;

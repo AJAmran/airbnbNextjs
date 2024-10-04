@@ -33,114 +33,106 @@ export function SearchComponent() {
     "where" | "checkin" | "checkout" | "calendar" | "guests" | null
   >(null);
   const [locationValue, setLocationValue] = useState("");
+  const [guestCount, setGuestCount] = useState({
+    adults: 0,
+    children: 0,
+    infants: 0,
+  });
   const { getAllCountries } = useCountries();
 
   const renderModalContent = () => {
-    if (modalContent === "where") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle>Where</DialogTitle>
-          </DialogHeader>
-          <Select
-            required
-            onValueChange={(value) => setLocationValue(value)}
-            value={locationValue}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Search Destination" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Suggested Destinations</SelectLabel>
-                {getAllCountries().map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.flag} {item.label} / {item.region}
-                  </SelectItem>
+    switch (modalContent) {
+      case "where":
+        return (
+          <>
+            <DialogHeader>
+              <DialogTitle>Where</DialogTitle>
+            </DialogHeader>
+            <Select
+              required
+              onValueChange={(value) => setLocationValue(value)}
+              value={locationValue}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Search Destination" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Suggested Destinations</SelectLabel>
+                  {getAllCountries().map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.flag} {item.label} / {item.region}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <HomeMap locationValue={locationValue} />
+          </>
+        );
+
+      case "checkin":
+      case "checkout":
+      case "calendar":
+        return (
+          <>
+            <DialogHeader>
+              <DialogTitle>
+                {modalContent === "checkin"
+                  ? "Check-in"
+                  : modalContent === "checkout"
+                  ? "Check-out"
+                  : "Date"}
+              </DialogTitle>
+            </DialogHeader>
+            <CalendarComponent />
+          </>
+        );
+
+      case "guests":
+        return (
+          <>
+            <DialogHeader>
+              <DialogTitle>Who</DialogTitle>
+            </DialogHeader>
+            <Card>
+              <CardHeader className="flex flex-col gap-y-5">
+                {["Adults", "Children", "Infants"].map((type) => (
+                  <div className="flex items-center justify-between" key={type}>
+                    <div className="flex flex-col">
+                      <h3 className="underline font-medium">{type}</h3>
+                      <p className="text-muted-foreground text-sm">
+                        {type === "Adults"
+                          ? "Ages 13 or above"
+                          : type === "Children"
+                          ? "Ages 2 – 12"
+                          : "Under 2"}
+                      </p>
+                    </div>
+                    <Counter
+                      name={type.toLowerCase()}
+                      onChange={(value) =>
+                        setGuestCount((prev) => ({
+                          ...prev,
+                          [type.toLowerCase()]: value,
+                        }))
+                      }
+                    />
+                  </div>
                 ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <HomeMap locationValue={locationValue} />
-        </>
-      );
-    }
+              </CardHeader>
+            </Card>
+          </>
+        );
 
-    if (modalContent === "checkin") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle>Check-in</DialogTitle>
-          </DialogHeader>
-          <CalendarComponent />
-        </>
-      );
-    }
-
-    if (modalContent === "checkout") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle>Check-out</DialogTitle>
-          </DialogHeader>
-          <CalendarComponent />
-        </>
-      );
-    }
-
-    if (modalContent === "calendar") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle>Date</DialogTitle>
-          </DialogHeader>
-          <CalendarComponent />
-        </>
-      );
-    }
-
-    if (modalContent === "guests") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle>Who</DialogTitle>
-          </DialogHeader>
-          <Card>
-            <CardHeader className="flex flex-col gap-y-5">
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <h3 className="underline font-medium">Adults</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Ages 13 or above
-                  </p>
-                </div>
-                <Counter name="adults" />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <h3 className="underline font-medium">Children</h3>
-                  <p className="text-muted-foreground text-sm">Ages 2 – 12</p>
-                </div>
-                <Counter name="children" />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <h3 className="underline font-medium">Infants</h3>
-                  <p className="text-muted-foreground text-sm">Under 2</p>
-                </div>
-                <Counter name="infants" />
-              </div>
-            </CardHeader>
-          </Card>
-        </>
-      );
+      default:
+        return null;
     }
   };
 
   return (
     <Dialog>
       <div className="flex flex-col items-center justify-center gap-4">
-        {/* Centering toggle buttons */}
         <div className="flex items-center gap-2">
           <Button
             variant={searchType === "stays" ? "outline" : "ghost"}
@@ -155,8 +147,6 @@ export function SearchComponent() {
             Experiences
           </Button>
         </div>
-
-        {/* Centering search section */}
         <DialogTrigger asChild>
           <div className="rounded-full py-2 px-5 border flex items-center cursor-pointer">
             <div className="flex h-full divide-x font-medium">
@@ -186,10 +176,12 @@ export function SearchComponent() {
           </div>
         </DialogTrigger>
       </div>
-
       <DialogContent className="w-full max-w-lg mx-auto mt-4">
         <form className="gap-4 flex flex-col">
           <input type="hidden" name="country" value={locationValue} />
+          <input type="hidden" name="adults" value={guestCount.adults} />
+          <input type="hidden" name="children" value={guestCount.children} />
+          <input type="hidden" name="infants" value={guestCount.infants} />
           {renderModalContent()}
         </form>
       </DialogContent>
