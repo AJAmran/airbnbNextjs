@@ -30,7 +30,7 @@ export function SearchComponent() {
     "stays"
   );
   const [modalContent, setModalContent] = useState<
-    "where" | "calendar" | "guests" | null
+    "where" | "checkin" | "checkout" | "calendar" | "guests" | null
   >(null);
   const [locationValue, setLocationValue] = useState("");
   const { getAllCountries } = useCountries();
@@ -48,7 +48,7 @@ export function SearchComponent() {
             value={locationValue}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Search Destinations" />
+              <SelectValue placeholder="Search Destination" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -66,11 +66,33 @@ export function SearchComponent() {
       );
     }
 
+    if (modalContent === "checkin") {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle>Check-in</DialogTitle>
+          </DialogHeader>
+          <CalendarComponent />
+        </>
+      );
+    }
+
+    if (modalContent === "checkout") {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle>Check-out</DialogTitle>
+          </DialogHeader>
+          <CalendarComponent />
+        </>
+      );
+    }
+
     if (modalContent === "calendar") {
       return (
         <>
           <DialogHeader>
-            <DialogTitle>Choose Date</DialogTitle>
+            <DialogTitle>Date</DialogTitle>
           </DialogHeader>
           <CalendarComponent />
         </>
@@ -139,13 +161,25 @@ export function SearchComponent() {
           <div className="rounded-full py-2 px-5 border flex items-center cursor-pointer">
             <div className="flex h-full divide-x font-medium">
               <p className="px-4" onClick={() => setModalContent("where")}>
-                Anywhere
+                Where
               </p>
-              <p className="px-4" onClick={() => setModalContent("calendar")}>
-                Any {searchType === "stays" ? "Week" : "Date"}
+              <p
+                className="px-4"
+                onClick={() =>
+                  setModalContent(
+                    searchType === "stays" ? "checkin" : "calendar"
+                  )
+                }
+              >
+                {searchType === "stays" ? "Check-in" : "Date"}
               </p>
+              {searchType === "stays" && (
+                <p className="px-4" onClick={() => setModalContent("checkout")}>
+                  Check-out
+                </p>
+              )}
               <p className="px-4" onClick={() => setModalContent("guests")}>
-                Add Guests
+                Who
               </p>
             </div>
             <Search className="bg-primary text-white p-1 h-8 w-8 rounded-full" />
@@ -153,7 +187,7 @@ export function SearchComponent() {
         </DialogTrigger>
       </div>
 
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="w-full max-w-lg mx-auto mt-4">
         <form className="gap-4 flex flex-col">
           <input type="hidden" name="country" value={locationValue} />
           {renderModalContent()}

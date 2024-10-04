@@ -8,7 +8,7 @@ import { User } from "./User";
 const Header = () => {
   return (
     <nav className="w-ful border-b">
-      <div className="flex items-center justify-between container mx-auto px-5 lg:px-10 py-5">
+      <div className="flex items-center justify-between container mx-auto px-5 py-5">
         <Image
           src={destop_logo}
           alt="AirBnb Logo"
